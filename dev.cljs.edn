@@ -1,0 +1,3 @@
+^{:watch-dirs  [#_"test" "src"]
+  :css-dirs    ["resources/public/css"]}
+{:main hexagons.ui}
