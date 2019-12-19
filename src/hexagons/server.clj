@@ -31,6 +31,8 @@
 (defn start! []
   (ws/run-server ws-handler {:port 9832 :join? false}))
 
+(defn stop! [])
+
 (do
   (stop!)
   (def stop!

@@ -22,7 +22,21 @@
    :brown2 [121 62 40]
    :brown3 [61 29 44]})
 
+(defn rand-shape []
+  (inc (rand-int 5)))
+
 (defn rand-tile []
   {:color  (rand-nth (keys colors))
    :tokens (inc (rand-int 5))
-   :shape  (inc (rand-int 5))})
+   :shape  (rand-shape)})
+
+(defn rand-action []
+  [(rand-nth [:get :steal :give])
+   (inc (rand-int 3))
+   (rand-nth [:card :token])])
+
+(defn rand-card []
+  {:shapes (doall (repeatedly (+ (rand-int 3) 3) rand-shape))
+   :actions (doall (repeatedly (inc (rand-int 2)) rand-action))})
+
+(rand-card)

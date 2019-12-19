@@ -11,11 +11,14 @@
              :color :green1
              :tokens 6
              :shape 3}}
-   :next-tile (game/rand-tile)})
+   :next-tile (game/rand-tile)
+   :phase :play-tile})
 
 (defn new-client [uuid name]
-  {:id   uuid
-   :name name})
+  {:id     uuid
+   :name   name
+   :tokens 3
+   :cards  (repeatedly 3 game/rand-card)})
 
 (defn get-game [uuid]
   (or (get @!games uuid)
@@ -40,25 +43,30 @@
 (defmulti -handle-event (fn [gid cid e & _] e))
 
 (defn handle-event [conn [gid cid type :as evt] send-fn]
-  (.println java.lang.System/out (prn-str (into [] (drop 2) evt)))
-  (case type
-    :connect
-    (do (or (get-client gid cid)
-            (add-client gid cid))
-        (swap! !clients assoc cid conn))
+  (try
+    (.println java.lang.System/out (prn-str (into [] (drop 2) evt)))
+    (case type
+      :connect
+      (do (or (get-client gid cid)
+              (add-client gid cid))
+          (swap! !clients assoc cid conn))
 
-    :disconnect
-    (do)
+      :disconnect
+      (do)
 
-    #_:else
-    (swap! !games update gid
-           (fn [game]
-             (apply -handle-event game (next evt)))))
+      #_:else
+      (swap! !games update gid
+             (fn [game]
+               (apply -handle-event game (next evt)))))
 
-  (let [game (get-game gid)
-        clients @!clients]
-    (doseq [{cid :id} (:clients game)]
-      (send-fn (get clients cid) [:game-state game]))))
+    (let [game (get-game gid)
+          clients @!clients]
+      (doseq [{cid :id} (:clients game)]
+        (send-fn (get clients cid) [:game-state game])))
+
+    (catch Exception e
+      (def ex e)
+      (send-fn (get @!clients cid) [:exception (str e)]))))
 
 (defn next-player [{:keys [clients active-player] :as game}]
   (->> clients
@@ -72,9 +80,9 @@
 (defmethod -handle-event :place-tile [{:keys [next-tile] :as game} _ _ [x y :as coords]]
   (-> game
       (update :tiles conj (assoc next-tile :coords coords))
-      (assoc :next-tile (game/rand-tile))
-      (assoc :hover nil)
-      next-player))
+      (assoc :next-tile (game/rand-tile)
+             :hover nil
+             :phase :buy-or-cast)))
 
 (defmethod -handle-event :start-hover! [game _ _ coords]
   (assoc game :hover coords))

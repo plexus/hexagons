@@ -15,7 +15,8 @@
  {:fig
   {:extra-paths ["target" "test"]
    :extra-deps  {com.bhauman/rebel-readline-cljs {:mvn/version "0.1.4"}
-                 com.bhauman/figwheel-main       {:mvn/version "0.1.9"}}}
+                 com.bhauman/figwheel-main       {:mvn/version "0.1.9"}
+                 }}
 
   :build
   {:main-opts ["-m" "figwheel.main" "-b" "dev" "-r"]}
